@@ -62,7 +62,19 @@ namespace :deploy do
   task :initial do
     on roles(:app) do
       before 'deploy:restart', 'puma:start'
+      before 'deploy:migrate', 'deploy:create_db'
       invoke 'deploy'
+    end
+  end
+
+  desc 'Create db in initial'
+  task :create_db do
+    on roles(:db) do
+      within release_path do
+        with rails_env: fetch(:rails_env) do
+          execute :rails, "db:setup"
+        end
+      end
     end
   end
 
